@@ -188,7 +188,7 @@ public class MulticastTestActivity extends Activity implements OnEditorActionLis
             }
         }
 
-        public void setStatus(String status) {
+        /*public void setStatus(String status) {
             sendMessage(Message.obtain(ipc, MSG_SET_STATUS, status));
         }
 
@@ -198,7 +198,7 @@ public class MulticastTestActivity extends Activity implements OnEditorActionLis
 
         public void error(Throwable throwable) {
             sendMessage(Message.obtain(ipc, MSG_ERROR, throwable));
-        }
+        }*/
     };
 
 }
