@@ -156,8 +156,7 @@ public class NetThread extends Thread {
             Log.v(TAG, String.format("received: offset=0x%04X (%d) length=0x%04X (%d)", response.getOffset(), response.getOffset(), response.getLength(), response.getLength()));
             Log.v(TAG, Util.hexDump(response.getData(), response.getOffset(), response.getLength()));
             */
-            
-            // ignore our own packet transmissions.
+
             if (localAddresses.contains(response.getAddress())) {
                 continue;
             }
@@ -172,9 +171,7 @@ public class NetThread extends Thread {
             }
 
             // send the packet to the UI
-            Packet packet = new Packet(response, multicastSocket);
-            packet.description = message.toString().trim();
-            Log.d("logging","Response --> "+packet +" >> "+response);
+            Log.d("logging","Response --> "+ response.getAddress() +" > "+message.getUsefullData().get(0)+"> "+message.getUsefullData().get(1));
         }
         
         // release the multicast lock

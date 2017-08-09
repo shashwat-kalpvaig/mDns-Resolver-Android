@@ -16,6 +16,7 @@
  */
 package com.kalpvaig.androidbonjourservicediscovery.Netlib.dns;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ import java.util.TreeMap;
 public class DNSMessage {
     
     private static short nextMessageId = 0;
+    private String name ="";
 
     private short messageId;
     private LinkedList<DNSQuestion> questions = new LinkedList<DNSQuestion>();
@@ -118,13 +120,16 @@ public class DNSMessage {
             answers.add(new DNSAnswer(buffer));
         }
     }
-    
+
+
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        String name = "";
         
         // questions
         for (DNSQuestion q : questions) {
-            sb.append(q.toString()+"\n");
+            sb.append(q.toString()+"  \n");
         }
         
         // group answers by name
@@ -139,14 +144,54 @@ public class DNSMessage {
             }
             list.add(a);
         }
+        int counter=0;
         for (Map.Entry<String, List<DNSAnswer>> entry : answersByName.entrySet()) {
-            sb.append(entry.getKey()+"\n");
+            if (counter==2) name = entry.getKey();
+            sb.append(entry.getKey()+" \n");
             for (DNSAnswer a : entry.getValue()){
-                sb.append("  "+a.type.toString()+" "+a.getRdataString()+"\n");
+                sb.append("  "+a.type.toString()+" "+a.getRdataString()+" \n");
             }
+            counter++;
         }
 
         return sb.toString();
+    }
+
+    public ArrayList<String> getUsefullData(){
+        StringBuilder sb = new StringBuilder();
+        String name = "";
+
+        // questions
+        for (DNSQuestion q : questions) {
+            sb.append(q.toString()+" \n");
+        }
+
+        // group answers by name
+        SortedMap<String,List<DNSAnswer>> answersByName = new TreeMap<String,List<DNSAnswer>>();
+        for (DNSAnswer a : answers) {
+            List<DNSAnswer> list;
+            if (answersByName.containsKey(a.name)) {
+                list = answersByName.get(a.name);
+            } else {
+                list = new LinkedList<DNSAnswer>();
+                answersByName.put(a.name, list);
+            }
+            list.add(a);
+        }
+        int counter=0;
+        for (Map.Entry<String, List<DNSAnswer>> entry : answersByName.entrySet()) {
+            if (counter==2) name = entry.getKey();
+            sb.append(entry.getKey()+" \n");
+            for (DNSAnswer a : entry.getValue()){
+                sb.append("  "+a.type.toString()+" "+a.getRdataString()+"\n");
+            }
+            counter++;
+        }
+        ArrayList<String> list = new ArrayList<>();
+        list.add(sb.toString());
+        list.add(name);
+
+        return  list;
     }
 
 }

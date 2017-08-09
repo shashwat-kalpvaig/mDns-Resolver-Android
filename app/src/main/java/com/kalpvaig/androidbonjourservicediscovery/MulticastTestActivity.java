@@ -18,8 +18,6 @@ package com.kalpvaig.androidbonjourservicediscovery;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -42,7 +40,6 @@ public class MulticastTestActivity extends Activity implements OnEditorActionLis
     private EditText hostBox;
     private ListView listView;
     private NetThread netThread = null;
-    private PacketListAdapter packetListAdapter;
 
     /**
      * Set up the user interface and perform certain setup steps.
@@ -74,9 +71,7 @@ public class MulticastTestActivity extends Activity implements OnEditorActionLis
     protected void onResume() {
         super.onResume();
         Log.v(TAG, "resume activity");
-        
-        packetListAdapter = new PacketListAdapter(this);
-        listView.setAdapter(packetListAdapter);
+
 
         if (netThread != null) {
             Log.e(TAG, "netThread should be null!");
@@ -95,9 +90,7 @@ public class MulticastTestActivity extends Activity implements OnEditorActionLis
     protected void onPause() {
         super.onPause();
         Log.v(TAG, "pause activity");
-        
-        packetListAdapter.clear();
-        packetListAdapter = null;
+
         
         if (netThread == null) {
             Log.e(TAG, "netThread should not be null!");
@@ -140,65 +133,15 @@ public class MulticastTestActivity extends Activity implements OnEditorActionLis
      * @param view
      */
     public void handleClearButton(View view) {
-        packetListAdapter.clear();
+
     }
 
     // inter-process communication
- 
-    public IPCHandler ipc = new IPCHandler();
-    
     /**
      * Allow the network thread to send us messages
      * via this IPC mechanism.
      * @author simmons
      */
-    class IPCHandler extends Handler {
 
-        private static final int MSG_SET_STATUS = 1;
-        private static final int MSG_ADD_PACKET = 2;
-        private static final int MSG_ERROR = 3;
-    
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            
-            // don't process incoming IPC if we are paused.
-            if (packetListAdapter == null) {
-                Log.w(TAG, "dropping incoming message: "+msg);
-                return;
-            }
-            
-            switch (msg.what) {
-            case MSG_SET_STATUS:
-                statusLine.setText((String)msg.obj);
-                break;
-            case MSG_ADD_PACKET:
-                packetListAdapter.addPacket((Packet)msg.obj);
-                listView.setSelection(packetListAdapter.getCount() - 1);
-                break;
-            case MSG_ERROR:
-                Packet packet = new Packet();
-                packet.description = ((Throwable)msg.obj).getMessage();
-                packetListAdapter.addPacket(packet);
-                listView.setSelection(packetListAdapter.getCount() - 1);
-                break;
-            default:
-                Log.w(TAG, "unknown activity message code: "+msg);
-                break;
-            }
-        }
-
-        /*public void setStatus(String status) {
-            sendMessage(Message.obtain(ipc, MSG_SET_STATUS, status));
-        }
-
-        public void addPacket(Packet packet) {
-            sendMessage(Message.obtain(ipc, MSG_ADD_PACKET, packet));
-        }
-
-        public void error(Throwable throwable) {
-            sendMessage(Message.obtain(ipc, MSG_ERROR, throwable));
-        }*/
-    };
 
 }
