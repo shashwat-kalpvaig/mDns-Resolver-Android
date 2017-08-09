@@ -25,6 +25,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import android.app.Activity;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.util.Log;
 
@@ -52,13 +53,13 @@ public class NetThread extends Thread {
     private InetAddress groupAddress;
     private MulticastSocket multicastSocket;
     private NetUtil netUtil;
-    private MulticastTestActivity activity;
+    private Activity activity;
     
     /**
      * Construct the network thread.
      * @param activity
      */
-    public NetThread(MulticastTestActivity activity) {
+    public NetThread(Activity activity) {
         super("net");
         this.activity = activity;
         netUtil = new NetUtil(activity);
@@ -105,8 +106,7 @@ public class NetThread extends Thread {
 
             openSocket();
         } catch (IOException e1) {
-            activity.ipc.setStatus("cannot initialize network.");
-            activity.ipc.error(e1);
+            Log.d("logging","cannot initialize network.");
             return;
         }
 
@@ -126,7 +126,7 @@ public class NetThread extends Thread {
                 // check for commands to be run
                 Command cmd = commandQueue.poll();
                 if (cmd == null) {
-                    activity.ipc.error(e);
+                    Log.d("logging",e.toString());
                     return;
                 }
 
@@ -134,7 +134,7 @@ public class NetThread extends Thread {
                 try {
                     openSocket();
                 } catch (IOException e1) {
-                    activity.ipc.error(new RuntimeException("socket reopen: "+e1.getMessage()));
+                    Log.d("logging",new RuntimeException("socket reopen: "+e1.getMessage()).toString());
                     return;
                 }
 
@@ -143,7 +143,7 @@ public class NetThread extends Thread {
                     try {
                         query(((QueryCommand)cmd).host);
                     } catch (IOException e1) {
-                        activity.ipc.error(e1);
+                        Log.d("logging",e1.toString());
                     }
                 } else if (cmd instanceof QuitCommand) {
                     break;
@@ -156,8 +156,7 @@ public class NetThread extends Thread {
             Log.v(TAG, String.format("received: offset=0x%04X (%d) length=0x%04X (%d)", response.getOffset(), response.getOffset(), response.getLength(), response.getLength()));
             Log.v(TAG, Util.hexDump(response.getData(), response.getOffset(), response.getLength()));
             */
-            
-            // ignore our own packet transmissions.
+
             if (localAddresses.contains(response.getAddress())) {
                 continue;
             }
@@ -167,14 +166,12 @@ public class NetThread extends Thread {
             try {
                 message = new DNSMessage(response.getData(), response.getOffset(), response.getLength());
             } catch (Exception e) {
-                activity.ipc.error(e);
+                Log.d("logging",e.toString());
                 continue;
             }
 
             // send the packet to the UI
-            Packet packet = new Packet(response, multicastSocket);
-            packet.description = message.toString().trim();
-            activity.ipc.addPacket(packet);
+            Log.d("logging","Response --> "+ response.getAddress() +" > "+message.getUsefullData().get(0)+"> "+message.getUsefullData().get(1));
         }
         
         // release the multicast lock
